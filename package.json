@@ -1,0 +1,10 @@
+{
+  "name": "harness-platform",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -k \"pnpm --dir server dev\" \"pnpm --dir client dev\"",
+    "build": "pnpm --dir client build",
+    "start": "pnpm --dir server start"
+  },
+  "devDependencies": { "concurrently": "^9.1.2" }
+}

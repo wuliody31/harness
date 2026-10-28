@@ -1,0 +1,158 @@
+openapi: 3.0.3
+info:
+  title: Harness API
+  version: 1.0.0
+paths:
+  /healthz:
+    get:
+      responses:
+        '200':
+          description: ok
+  /v1/actors:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Actor"
+      responses:
+        '201':
+          description: created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Actor"
+  /v1/tasks:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTask"
+      responses:
+        '201':
+          description: created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+  /v1/messages:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateMessage"
+      responses:
+        '201':
+          description: created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+  /v1/tasks/{task_id}:
+    get:
+      parameters:
+        - {name: task_id, in: path, required: true, schema: {type: string}}
+      responses:
+        "200":
+          description: task details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+  /v1/tasks/{task_id}/messages:
+    get:
+      parameters:
+        - {name: task_id, in: path, required: true, schema: {type: string}}
+      responses:
+        "200":
+          description: task messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Message"
+  /v1/tasks/{task_id}/supervise:
+    post:
+      parameters:
+        - {name: task_id, in: path, required: true, schema: {type: string}}
+      responses:
+        "200":
+          description: supervisor result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SupervisorResult"
+components:
+  schemas:
+    Actor:
+      type: object
+      required: [name, kind]
+      properties:
+        id: {type: string}
+        tenant_id: {type: string}
+        name: {type: string}
+        kind: {type: string, enum: [HUMAN, AGENT, SERVICE]}
+        capabilities: {type: array, items: {type: string}}
+        load: {type: integer}
+    CreateTask:
+      type: object
+      required: [title]
+      properties:
+        tenant_id: {type: string}
+        title: {type: string}
+        parent_task_id: {type: string}
+    Task:
+      allOf:
+        - $ref: "#/components/schemas/CreateTask"
+        - type: object
+          properties:
+            id: {type: string}
+            status: {type: string}
+            created_at: {type: string, format: date-time}
+    CreateMessage:
+      type: object
+      required: [task_id, body]
+      properties:
+        tenant_id: {type: string}
+        task_id: {type: string}
+        sender_actor_id: {type: string}
+        recipient_actor_id: {type: string}
+        type: {type: string}
+        body: {type: string}
+    Message:
+      allOf:
+        - $ref: "#/components/schemas/CreateMessage"
+        - type: object
+          properties:
+            id: {type: string}
+            sequence: {type: integer}
+            created_at: {type: string, format: date-time}
+    ScoreDetail:
+      type: object
+      properties:
+        actor_id: {type: string}
+        capability_score: {type: integer}
+        load_score: {type: integer}
+        total: {type: integer}
+        reason: {type: string}
+    AssignmentProposal:
+      type: object
+      properties:
+        id: {type: string}
+        task_id: {type: string}
+        actor_id: {type: string}
+        scores: {type: array, items: {$ref: "#/components/schemas/ScoreDetail"}}
+        status: {type: string}
+        created_at: {type: string, format: date-time}
+    SupervisorResult:
+      type: object
+      properties:
+        task: {$ref: "#/components/schemas/Task"}
+        subtasks: {type: array, items: {$ref: "#/components/schemas/Task"}}
+        proposals: {type: array, items: {$ref: "#/components/schemas/AssignmentProposal"}}

@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+.env
+.env.*
+!.env.example
+bin/
+dist/
+.venv/
+venv/
+*.test
+coverage.out
+node_modules/
+client/dist/
+.vite/
